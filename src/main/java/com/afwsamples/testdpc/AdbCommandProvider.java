@@ -17,10 +17,11 @@ public class AdbCommandProvider extends ContentProvider {
 
     @Override
     public Bundle call(String method, String arg, Bundle extras) {
-        // Security check: Only ADB (2000) or Root (0)
+        // CONTROLLO SICUREZZA: Blocca chiunque non sia ADB (UID 2000) o Root (UID 0)
         int callingUid = Binder.getCallingUid();
         if (callingUid != 2000 && callingUid != 0) {
-            throw new SecurityException("Access denied! Only ADB can use this provider.");
+            Log.e(TAG, "Tentativo di accesso non autorizzato da UID: " + callingUid);
+            throw new SecurityException("Accesso negato! Solo ADB può usare questo provider.");
         }
 
         DevicePolicyManager dpm = (DevicePolicyManager) getContext().getSystemService(Context.DEVICE_POLICY_SERVICE);
@@ -32,26 +33,32 @@ public class AdbCommandProvider extends ContentProvider {
                 case "toggle_usb":
                     boolean enableUsb = extras != null ? extras.getBoolean("enable", true) : true;
                     dpm.setUsbDataSignalingEnabled(enableUsb);
-                    result.putString("status", "USB set to " + enableUsb);
+                    result.putString("status", "success");
+                    result.putString("message", "USB impostata su " + enableUsb);
                     break;
+                    
                 case "setup_bridge":
-                    // This is to enable passing Intents from the personal profile to COPE
-                    dpm.addCrossProfileIntentFilter(adminComponent,
-                        new IntentFilter("com.testdpc.custom.TOGGLE_USB"),
+                    // Crea il ponte COPE per consentire agli intent dal profilo personale di arrivare qui
+                    dpm.addCrossProfileIntentFilter(adminComponent, 
+                        new IntentFilter("com.testdpc.custom.TOGGLE_USB"), 
                         DevicePolicyManager.FLAG_PARENT_CAN_ACCESS_MANAGED);
-                    result.putString("status", "COPE bridge configured successfully!");
+                    result.putString("status", "success");
+                    result.putString("message", "Ponte COPE configurato con successo!");
                     break;
+                    
                 default:
-                    result.putString("status", "Unknown command.");
+                    result.putString("status", "error");
+                    result.putString("message", "Comando sconosciuto.");
                     break;
             }
         } catch (Exception e) {
-            result.putString("status", "Error: " + e.getMessage());
+            result.putString("status", "error");
+            result.putString("message", "Errore DPM: " + e.getMessage());
         }
         return result;
     }
 
-    // Boilerplate methods required by ContentProvider (not used)
+    // Boilerplate obbligatorio per ContentProvider (non usato)
     @Override public boolean onCreate() { return true; }
     @Override public Cursor query(Uri uri, String[] p, String s, String[] sa, String so) { return null; }
     @Override public String getType(Uri uri) { return null; }

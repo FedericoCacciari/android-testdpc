@@ -303,7 +303,7 @@
           </intent-filter>
         </service>
 
-        <receiver android:name=".PowerCommandsReceiver"
+        <receiver android:name=".TaskerReceiver"
                   android:exported="true"
                   android:permission="com.testdpc.permission.USE_POWER_COMMANDS">
             <intent-filter>
@@ -314,7 +314,6 @@
         <provider android:name=".AdbCommandProvider"
                   android:authorities="com.testdpc.adb_console"
                   android:exported="true" />
-
     </application>
 
 </manifest>

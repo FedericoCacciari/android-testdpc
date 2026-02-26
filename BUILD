@@ -4,6 +4,7 @@ exports_files([
     "LICENSE",
     ".blazeproject",
     "WORKSPACE",
+    "custom.keystore",
 ])
 
 MANIFEST = "src/main/AndroidManifest.xml"
